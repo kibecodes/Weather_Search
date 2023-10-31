@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import SearchTab from "./components/search.tab";
 
 interface WeatherDataProps {
   location: {
@@ -15,21 +16,34 @@ interface WeatherDataProps {
   condition: {
     text: string,
   }
-
 }
 
 const App = () => {
   const [weatherData, setWeatherData] = useState<WeatherDataProps | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [searchHistory, setSearchHistory] = useState<string[]>([])
+  const [query, setQuery] = useState("")
+
+    const handleSearch = () => {
+        setSearchHistory(prevHistory => [...prevHistory, query]);
+        setQuery(query)
+    }
+
+    const handleSubmit = (e: React.FormEvent<HTMLElement>) => {
+      e.preventDefault();
+      handleSearch();
+  }
+    
 
   useEffect (() => {
-    (async() => {
+    ( async() => {
       try {
-        const response = await fetch("http://api.weatherapi.com/v1/current.json?key=8d2f97e789064394953175937231306&q=malmo")
+        const response = await fetch(`http://api.weatherapi.com/v1/forecast.json?key=8d2f97e789064394953175937231306&q=${query}`)
         if (!response.ok){
           throw new Error("Request failed")
         }
         const data =  await response.json()
+        console.log(data)
         const {location, current} = data
         const {name, region, country} = location
         const {temp_c, temp_f, condition, humidity} = current
@@ -45,11 +59,21 @@ const App = () => {
         console.error("An error occurred:", error)
       }
     })()
-  },[])
-
+  },[searchHistory])
 
   return ( 
+    <>
     <div>
+      <SearchTab 
+        query={query} 
+        setQuery={setQuery}
+        handleSubmit={handleSubmit}
+        handleSearch={handleSearch} 
+        setSearchHistory={setSearchHistory}
+
+        />
+
+          <div>
       {isLoading ? 
       <div>... Loading </div>
        : 
@@ -60,6 +84,8 @@ const App = () => {
       </div> 
       }
     </div>
+    </div>
+    </>
   )
 }
 
