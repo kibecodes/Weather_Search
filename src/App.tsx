@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import SearchTab from "./components/search.tab";
 
+require('dotenv').config();
+const apikey = process.env.WEATHER_APP_API_KEY;
+
 interface WeatherDataProps {
   location: {
     name: string,
@@ -38,12 +41,11 @@ const App = () => {
   useEffect (() => {
     ( async() => {
       try {
-        const response = await fetch(`http://api.weatherapi.com/v1/forecast.json?key=8d2f97e789064394953175937231306&q=${query}`)
+        const response = await fetch(`http://api.weatherapi.com/v1/forecast.json?key=${apikey}&q=${query}`)
         if (!response.ok){
           throw new Error("Request failed")
         }
         const data =  await response.json()
-        console.log(data)
         const {location, current} = data
         const {name, region, country} = location
         const {temp_c, temp_f, condition, humidity} = current
